@@ -21,7 +21,7 @@ namespace Boids
 
        public RainDrop()
        {
-
+        this.rnd = new Random();
        }
        public RainDrop(Vector2 WindowSize, Random rnd)
        {
@@ -32,19 +32,17 @@ namespace Boids
        }
        public static void Setup()
        {
-           //vertices of the drople: square - split into two triangles
+           //vertices of the droplet: triangle
            float[] Vertices = new float[]
            {
-           -0.5f,-0.5f,
-           0.5f,-0.5f,
-           0.5f,0.5f,
-           -0.5f,0.5f,
+           -0.8f,-0.6f,
+           0f,0.6f,
+           0.8f,-0.6f,
            };
-           //index of the vertices for constructing two triangles
+           //index of the vertices for constructing triangle
            uint[] Indices = new uint[]
            {
            0,1,2,
-           0,2,3,
            };
 
            VAO = GL.GenVertexArray();
@@ -75,7 +73,7 @@ VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
 position.Y, 0);
            myShader.SetMatrix4("u_model", model);
            myShader.SetFloat("u_time", time);
-           GL.DrawElements(PrimitiveType.Triangles, 6,
+           GL.DrawElements(PrimitiveType.Triangles, 3,
 DrawElementsType.UnsignedInt, 0);
 
        }
@@ -84,7 +82,7 @@ DrawElementsType.UnsignedInt, 0);
            //random position within the space above the window, the larger position.Y range is the more spread out the raindrops are in the Y-dir
            position.X = (float)rnd.NextDouble() * WindowSize.X;
            position.Y = (float)rnd.NextDouble() * 1000 - 1050;
-           velocityY = (float)rnd.NextDouble() * 80 +20;
+           velocityY = (float)rnd.NextDouble() * 80+20;
            time = (float)rnd.NextDouble();
 
 

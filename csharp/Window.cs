@@ -16,7 +16,7 @@ namespace Boids
            };
 
            var window = new Window(GameWindowSettings.Default, windowSettings);
-           window.Run();
+           window.Run();           
        }
    }
 }
