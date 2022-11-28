@@ -27,18 +27,18 @@ NativeWindowSettings nativeWindowSettings)
        private int count = 0;
        private Random rnd;
        private int seed = 0;
-       private RainDrop[] RainDrops = new RainDrop[1000];
+       private List<Boid> Boids = new List<Boid>();
        protected override void OnLoad()
        {
            base.OnLoad();
            //always starts on the same seed
            rnd = new Random(seed);
-           RainDrop.Setup();
+           Boid.Setup();
            myShader = new Shader("Shaders/VertexShader.glsl",
 "Shaders/FragmentShader.glsl");
-           for (int i = 0; i < RainDrops.Length; i++)
+           for (int i = 0; i < 100; i++)
            {
-                RainDrops[i] = new RainDrop(new Vector2(800, 800), rnd);
+                Boids.Add(new Boid(new Vector2(800, 800), rnd));
            }
        }
 
@@ -55,10 +55,10 @@ NativeWindowSettings nativeWindowSettings)
            
            GL.ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
            GL.Clear(ClearBufferMask.ColorBufferBit);
-           for (int i = 0; i < RainDrops.Length; i++)
+           for (int i = 0; i < Boids.Count; i++)
            {
-               RainDrops[i].Update((float)(args.Time));
-               RainDrops[i].Draw(myShader);
+               Boids[i].Update((float)(args.Time), Boids);
+               Boids[i].Draw(myShader);
            }
 
            SwapBuffers();      

@@ -8,9 +8,9 @@ using OpenTK.Graphics.OpenGL4;
 
 namespace Boids
 {
-   class RainDrop
+   class Boid
    {
-       private float velocityY;
+       private float velocity;
        private float acceleration = 10;
        private float time;
        private Vector2 position;
@@ -18,12 +18,15 @@ namespace Boids
        private Vector2 size = new Vector2(5, 10);
        private Random rnd;
        private static int VAO;
+       
+       private static float VisualRange = 150.0f;
 
-       public RainDrop()
+    public Vector2 Position{get => position;}
+       public Boid()
        {
         this.rnd = new Random();
        }
-       public RainDrop(Vector2 WindowSize, Random rnd)
+       public Boid(Vector2 WindowSize, Random rnd)
        {
            this.WindowSize = WindowSize;
            this.rnd = rnd;
@@ -69,12 +72,12 @@ VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
            //applying shader and creating the two triangle models, then scaling them down, and applying a uniform to the time and model
            GL.BindVertexArray(VAO);
            Matrix4 model = Matrix4.CreateScale(size.X, size.Y, 1);
-           model = model * Matrix4.CreateTranslation(position.X,
-position.Y, 0);
+           
+           model = model * Matrix4.CreateTranslation(position.X, position.Y, 0);
            myShader.SetMatrix4("u_model", model);
            myShader.SetFloat("u_time", time);
-           GL.DrawElements(PrimitiveType.Triangles, 3,
-DrawElementsType.UnsignedInt, 0);
+           
+           GL.DrawElements(PrimitiveType.Triangles, 3, DrawElementsType.UnsignedInt, 0);
 
        }
        private void Reset()
@@ -82,23 +85,56 @@ DrawElementsType.UnsignedInt, 0);
            //random position within the space above the window, the larger position.Y range is the more spread out the raindrops are in the Y-dir
            position.X = (float)rnd.NextDouble() * WindowSize.X;
            position.Y = (float)rnd.NextDouble() * 1000 - 1050;
-           velocityY = (float)rnd.NextDouble() * 80+20;
+           velocity = (float)rnd.NextDouble() * 80+20;
            time = (float)rnd.NextDouble();
 
-
+        
        }
-       public void Update(float DeltaTime)
+       public void Update(float DeltaTime, List<Boid> boids)
        {
            //using deltatime to ensure the velocity is always the same no matter the framerate
            //implementing acceleration
-           position.Y = position.Y + velocityY * DeltaTime;
-           velocityY = velocityY + acceleration * DeltaTime;
+           position.Y = position.Y + velocity * DeltaTime;
+           velocity = velocity + acceleration * DeltaTime;
            time += DeltaTime;
            //calling the position reset of the droplet
            if (position.Y > WindowSize.Y + size.Y)
            {
                Reset();
            }
+           List<Boid> foundBoids = FindBoidsInRange(boids);
+           Console.WriteLine(foundBoids.Count);
+       }
+       public List<Boid> FindBoidsInRange(List<Boid> Boids)
+       {
+        List<Boid> FoundBoids = new List<Boid>(); 
+
+        if(position.Y < 0 || position.Y >= WindowSize.Y) return FoundBoids;
+
+        foreach(Boid boid in Boids)
+        {
+            
+            Vector2 BoidPosition = boid.Position;
+            if(BoidPosition == position) continue;
+            if(BoidPosition.Y < 0 || BoidPosition.Y >= WindowSize.Y) continue;
+            
+            Vector2 VectorDistance = BoidPosition - Position;
+            double Distance = Math.Sqrt(VectorDistance.X * VectorDistance.X + VectorDistance.Y * VectorDistance.Y);
+            if(Distance <= VisualRange)
+            {
+                FoundBoids.Add(boid);
+            }
+        }
+        return FoundBoids;
+       }
+       public void Separation()
+       {
+        
+       }
+       public Matrix4 Rotation( float angle, Vector3 axis)
+       {
+       return Matrix4.CreateFromAxisAngle(axis, (float)(angle/180 * Math.PI));
+
        }
    }
 
