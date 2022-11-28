@@ -10,8 +10,10 @@ namespace Boids
 {
    class Boid
    {
-       private float velocity;
-       private float acceleration = 10;
+       private float maxVelocity = 100.0f;
+       
+       private Vector2 velocity;
+       private float angle = (float)Math.PI /2 ;
        private float time;
        private Vector2 position;
        private Vector2 WindowSize;
@@ -72,8 +74,10 @@ VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
            //applying shader and creating the two triangle models, then scaling them down, and applying a uniform to the time and model
            GL.BindVertexArray(VAO);
            Matrix4 model = Matrix4.CreateScale(size.X, size.Y, 1);
-           
+           model = model * Rotation(angle - (float)Math.PI/2, Vector3.UnitZ);
+
            model = model * Matrix4.CreateTranslation(position.X, position.Y, 0);
+           
            myShader.SetMatrix4("u_model", model);
            myShader.SetFloat("u_time", time);
            
@@ -84,21 +88,23 @@ VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
        {
            //random position within the space above the window, the larger position.Y range is the more spread out the raindrops are in the Y-dir
            position.X = (float)rnd.NextDouble() * WindowSize.X;
-           position.Y = (float)rnd.NextDouble() * 1000 - 1050;
-           velocity = (float)rnd.NextDouble() * 80+20;
+           position.Y = (float)rnd.NextDouble() * WindowSize.Y;
+            angle = (float)(rnd.NextDouble() * Math.PI * 2);
            time = (float)rnd.NextDouble();
 
         
        }
        public void Update(float DeltaTime, List<Boid> boids)
        {
+        velocity.X = maxVelocity * (float)Math.Cos(angle);
+        velocity.Y = maxVelocity * (float)Math.Sin(angle);
+
            //using deltatime to ensure the velocity is always the same no matter the framerate
            //implementing acceleration
-           position.Y = position.Y + velocity * DeltaTime;
-           velocity = velocity + acceleration * DeltaTime;
+           position = position + velocity * DeltaTime;
            time += DeltaTime;
            //calling the position reset of the droplet
-           if (position.Y > WindowSize.Y + size.Y)
+           if (position.Y > WindowSize.Y + 10 || position.Y < -10 || position.X > WindowSize.X + 10 || position.X < -10)
            {
                Reset();
            }
@@ -117,7 +123,7 @@ VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
             Vector2 BoidPosition = boid.Position;
             if(BoidPosition == position) continue;
             if(BoidPosition.Y < 0 || BoidPosition.Y >= WindowSize.Y) continue;
-            
+
             Vector2 VectorDistance = BoidPosition - Position;
             double Distance = Math.Sqrt(VectorDistance.X * VectorDistance.X + VectorDistance.Y * VectorDistance.Y);
             if(Distance <= VisualRange)
@@ -133,7 +139,7 @@ VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
        }
        public Matrix4 Rotation( float angle, Vector3 axis)
        {
-       return Matrix4.CreateFromAxisAngle(axis, (float)(angle/180 * Math.PI));
+       return Matrix4.CreateFromAxisAngle(axis, angle);
 
        }
    }
