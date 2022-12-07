@@ -10,7 +10,7 @@ namespace Boids
 {
     class Boid
     {
-        private float maxVelocity = 1.0f;
+        private float maxVelocity = 100.0f;
 
         private Vector2 velocity;
 
@@ -22,7 +22,7 @@ namespace Boids
         private static int VAO;
 
         private static float VisualRange = 60.0f;
-        private static float SeparationInput = 40;
+        private static float SeparationInput = 20.0f;
         public Vector2 Position { get => position; }
         public Boid()
         {
@@ -100,7 +100,7 @@ namespace Boids
         {
 
             //using deltatime to ensure the velocity is always the same no matter the framerate
-            position = position + velocity * DeltaTime;
+
             time += DeltaTime;
             if (position.Y > WindowSize.Y + 10)
                 position.Y = -10;
@@ -112,7 +112,11 @@ namespace Boids
                 position.X = WindowSize.X + 10;
 
             List<Boid> foundBoids = FindBoidsInRange(boids);
-            CollectAllVectors(foundBoids);
+            if (foundBoids.Count != 0)
+            {
+                CollectAllVectors(foundBoids);
+            }
+            position = position + velocity * DeltaTime;
         }
         public List<Boid> FindBoidsInRange(List<Boid> Boids)
         {
@@ -136,16 +140,27 @@ namespace Boids
             }
             return FoundBoids;
         }
-        public Vector2 Cohesion(List<Boid> FoundBoids)
+        public Vector2 CentreOfMass(List<Boid> FoundBoids)
         {
 
             Vector2 CentreOfMass = position;
             foreach (Boid boid in FoundBoids)
                 CentreOfMass += boid.Position;
+            CentreOfMass = CentreOfMass / (FoundBoids.Count + 1);
 
-            CentreOfMass = CentreOfMass / (FoundBoids.Count+1);
-            Vector2 SteeringCentre = (CentreOfMass - position) / 100;
-            return SteeringCentre;
+            return CentreOfMass;
+        }
+
+        public Vector2 Cohesion(List<Boid> FoundBoids)
+        {
+
+            Vector2 CentreOfMass = Vector2.Zero;
+            foreach (Boid boid in FoundBoids)
+            {
+                CentreOfMass += boid.Position;
+            }
+            CentreOfMass /= (FoundBoids.Count);
+            return (CentreOfMass - Position) / 100.0f;
 
         }
         public Vector2 Separation(List<Boid> FoundBoids)
@@ -153,26 +168,25 @@ namespace Boids
             Vector2 displacement = Vector2.Zero;
             foreach (Boid boid in FoundBoids)
             {
-                    Vector2 difference = position - boid.position;
-                    if (Math.Sqrt(Math.Pow(difference.X, 2.0) + Math.Pow(difference.Y, 2.0)) < SeparationInput)
-                    
-                        displacement = displacement - (boid.position - position);
+                Vector2 difference = position - boid.position;
+                if (Math.Sqrt(Math.Pow(difference.X, 2.0) + Math.Pow(difference.Y, 2.0)) < SeparationInput)
+
+                    displacement = displacement - (boid.position - position);
             }
-            return displacement / 100;
+
+            return displacement;
         }
         public Vector2 Alignment(List<Boid> FoundBoids)
         {
             Vector2 AverageDirection = Vector2.Zero;
+            foreach (Boid boid in FoundBoids)
+            {
+                AverageDirection += boid.velocity;
+            }
+            AverageDirection = AverageDirection / (FoundBoids.Count);
 
-                foreach (Boid boid in FoundBoids)
-                {
-                    if (FoundBoids.Count != 0)
-                    AverageDirection += boid.velocity;
-                }
-                AverageDirection = AverageDirection / (FoundBoids.Count + 1);
-            
 
-            return AverageDirection;
+            return (AverageDirection - velocity) / 8.0f;
         }
         public void CollectAllVectors(List<Boid> boids)
         {
@@ -182,7 +196,6 @@ namespace Boids
             velocity = (velocity + v1 + v2 + v3);
             velocity.Normalize();
             velocity = velocity * maxVelocity;
-            position = (position + velocity);
 
 
 
