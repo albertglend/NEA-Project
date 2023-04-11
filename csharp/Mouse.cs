@@ -16,22 +16,6 @@ using OpenTK.Input;
 
 namespace Boids;
 
-class CustomMouse
-{
-    public CustomMouse()
-    {
-          
-    }
-
-
-   public void Setup(GameWindow window)
-   {
-    window.MouseMove += new Action<MouseMoveEventArgs>(OnMouseMove);
-   }
-   private void OnMouseMove(MouseMoveEventArgs args)
-   {
-    Console.WriteLine("success{0} {1}, ",args.X, args.Y);
-
-   }
-
+class User{
+    
 }

@@ -30,7 +30,7 @@ namespace Boids
         // Set visual range base value of BOID
         private static float VisualRange = 40.0f;
         // Set Separation magnitude base value of BOID
-        private static float SeparationInput = 20.0f;
+        public static float SeparationInput = 20.0f;
         // Getter function of BOID position
         public Vector2 Position { get => position; }
         // Create new instance of BOIDs with new random seed
@@ -208,7 +208,7 @@ namespace Boids
             AverageDirection = AverageDirection / (FoundBoids.Count);
 
 
-            return (AverageDirection - velocity) / 8.0f;
+            return (AverageDirection - velocity) / 8.0f ;
         }
         public void CollectAllVectors(List<Boid> boids)
         {

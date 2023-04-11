@@ -22,10 +22,8 @@ namespace Boids
         {
             myShader = new Shader();
             rnd = new Random();
-            mouse = new CustomMouse();
-            mouse.Setup(this);
         }
-        private CustomMouse mouse;
+
         private Shader myShader;
         private float time;
         private int count = 0;
@@ -45,15 +43,15 @@ namespace Boids
             {
                 Boids.Add(new Boid(new Vector2(800, 800), rnd));
             }
-            controller = new ImGuiController(800,800);
+            controller = new ImGuiController(800, 800);
         }
 
-        
+
         protected override void OnRenderFrame(FrameEventArgs args)
         {
-            
+
             base.OnRenderFrame(args);
-            controller.Update(this,(float)args.Time);
+            controller.Update(this, (float)args.Time);
             count++;
 
             myShader.Bind();
@@ -63,13 +61,18 @@ namespace Boids
             myShader.SetMatrix4("u_projection", projection);
 
             GL.ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-            GL.Clear(ClearBufferMask.ColorBufferBit|ClearBufferMask.DepthBufferBit|ClearBufferMask.StencilBufferBit);
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
             for (int i = 0; i < Boids.Count; i++)
             {
                 Boids[i].Update((float)(args.Time), Boids);
                 Boids[i].Draw(myShader);
             }
-            ImGui.ShowDemoWindow();
+            if (ImGui.Begin("test"))
+            {
+                ImGui.Text("success");
+                ImGui.End();
+            }
+            RenderImGui();
             controller.Render();
             ImGuiController.CheckGLError("End of frame");
             SwapBuffers();
@@ -101,5 +104,13 @@ namespace Boids
         {
             base.OnUnload();
         }
-    }
-}
+        protected void RenderImGui()
+        {
+
+            if (ImGui.Begin("settings"))
+            {
+                ImGui.SliderFloat("separation", ref Boid.SeparationInput, 1.0f, 100.0f);
+                ImGui.End();
+            }
+        }}}
+    
