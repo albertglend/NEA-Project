@@ -10,24 +10,35 @@ namespace Boids
 {
     class Boid
     {
+        // Create velocity variable and set max of variable
         private float maxVelocity = 100.0f;
-
         private Vector2 velocity;
-
+        // Create time variable
         private float time;
+        // Create BOID position variable (openTK)
         private Vector2 position;
+        // Create WindowSize variable (openTK)
         private Vector2 WindowSize;
-        private Vector2 size = new Vector2(5, 10);
-        private Random rnd;
-        private static int VAO;
+        // Create relative size of BOID variable (openTK)
 
-        private static float VisualRange = 60.0f;
+        private ImGuiController Controller;
+        private Vector2 size = new Vector2(5, 10);
+        // Create random seed variable
+        private Random rnd;
+        // Create Vertex Array Object variable (descriptor of vertex data)
+        private static int VAO;
+        // Set visual range base value of BOID
+        private static float VisualRange = 40.0f;
+        // Set Separation magnitude base value of BOID
         private static float SeparationInput = 20.0f;
+        // Getter function of BOID position
         public Vector2 Position { get => position; }
+        // Create new instance of BOIDs with new random seed
         public Boid()
         {
             this.rnd = new Random();
         }
+        // Create new instance of BOID with random seed and window size as perameters and then reset the window
         public Boid(Vector2 WindowSize, Random rnd)
         {
             this.WindowSize = WindowSize;
@@ -35,9 +46,10 @@ namespace Boids
             Reset();
 
         }
+        // Set up of BOID
         public static void Setup()
         {
-            //vertices of the droplet: triangle
+            //vertices of the BOID : triangle
             float[] Vertices = new float[]
             {
            -0.8f,-0.6f,
@@ -47,47 +59,53 @@ namespace Boids
             //index of the vertices for constructing triangle
             uint[] Indices = new uint[]
             {
-           0,1,2,
+                0,1,2,
             };
-
+            // Generate VAO, VBO (Vertex Buffer Object) and EBO (Element Buffer Object) : Setting up the vertex date
             VAO = GL.GenVertexArray();
             int VBO = GL.GenBuffer();
             int EBO = GL.GenBuffer();
-
+            // Binds the vertex data
             GL.BindVertexArray(VAO);
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, EBO);
-
+            // initialises buffer object (array of unformatted data object)    
             GL.BufferData(BufferTarget.ArrayBuffer, Vertices.Length *
  sizeof(float), Vertices, BufferUsageHint.StaticDraw);
+            // Draws the vertices
             GL.BufferData(BufferTarget.ElementArrayBuffer,
  Indices.Length * sizeof(uint), Indices, BufferUsageHint.StaticDraw);
-
+            // Defines generic vertex attribute data, Clears the VAO, VBO
             GL.VertexAttribPointer(0, 2,
  VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
             GL.EnableVertexAttribArray(0);
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
             GL.BindVertexArray(0);
+            
         }
+
+        // Draws the vertex data to the window
         public void Draw(Shader myShader)
+
         {
-            //applying shader and creating the two triangle models, then scaling them down, and applying a uniform to the time and model
+            //applying shader and creating the BOID, then scaling down, and applying a uniform (global perameters for the shader)
             GL.BindVertexArray(VAO);
+            // Create model or BOID drawing
             Matrix4 model = Matrix4.CreateScale(size.X, size.Y, 1);
-
+            // apply the relative angle rotation of the boid from the x-axis to the model
             model = model * Rotation(Math.Atan2(velocity.Y, velocity.X) - (float)Math.PI / 2, Vector3.UnitZ);
-
+            // applies translation to model
             model = model * Matrix4.CreateTranslation(position.X, position.Y, 0);
-
+            // applies shader uniform
             myShader.SetMatrix4("u_model", model);
             myShader.SetFloat("u_time", time);
-
+            // Draw function (openTK) (render to screen)
             GL.DrawElements(PrimitiveType.Triangles, 3, DrawElementsType.UnsignedInt, 0);
 
         }
         private void Reset()
         {
-            //random position within the space above the window, the larger position.Y range is the more spread out the raindrops are in the Y-dir
+            //Applies random position to the boid and sets new random velocity for direction upon window Reset (function) call
             position.X = (float)rnd.NextDouble() * WindowSize.X;
             position.Y = (float)rnd.NextDouble() * WindowSize.Y;
             velocity.X = (float)(rnd.NextDouble() * 2 - 1) * maxVelocity;
@@ -96,12 +114,13 @@ namespace Boids
 
 
         }
+        // Update of BOIDs relative to time, the visual movement involved in the program
         public void Update(float DeltaTime, List<Boid> boids)
         {
 
             //using deltatime to ensure the velocity is always the same no matter the framerate
-
             time += DeltaTime;
+            // checks to see position of BOID compared to window, corrects by moving to the other side so that the window is finite
             if (position.Y > WindowSize.Y + 10)
                 position.Y = -10;
             else if (position.Y < -10)
@@ -110,14 +129,17 @@ namespace Boids
                 position.X = -10;
             else if (position.X < -10)
                 position.X = WindowSize.X + 10;
-
+            //Make call to the FindBoidsInRange function and instantiate a list of BOID in vicinity of currentBOID
             List<Boid> foundBoids = FindBoidsInRange(boids);
+            // Conditional velocity vector updater 
             if (foundBoids.Count != 0)
             {
                 CollectAllVectors(foundBoids);
             }
+            // updating position based on velocity due to BOID rules multiplied by the set framerate DeltaTime, essentially p = p + vt
             position = position + velocity * DeltaTime;
         }
+        //function to find 
         public List<Boid> FindBoidsInRange(List<Boid> Boids)
         {
             List<Boid> FoundBoids = new List<Boid>();
@@ -128,8 +150,8 @@ namespace Boids
             {
 
                 Vector2 BoidPosition = boid.Position;
-                if (BoidPosition == position) continue;
                 if (BoidPosition.Y < 0 || BoidPosition.Y >= WindowSize.Y) continue;
+                if (BoidPosition == position) continue;
 
                 Vector2 VectorDistance = BoidPosition - Position;
                 double Distance = Math.Sqrt(VectorDistance.X * VectorDistance.X + VectorDistance.Y * VectorDistance.Y);
@@ -195,6 +217,7 @@ namespace Boids
             Vector2 v3 = Alignment(boids);
             velocity = (velocity + v1 + v2 + v3);
             velocity.Normalize();
+            maxVelocity = 80.0f + (float)(rnd.NextDouble() * 40.0);
             velocity = velocity * maxVelocity;
 
 

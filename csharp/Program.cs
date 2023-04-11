@@ -9,6 +9,8 @@ using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Mathematics;
+using OpenTK.Input;
+using ImGuiNET;
 
 namespace Boids
 {
@@ -20,14 +22,18 @@ namespace Boids
         {
             myShader = new Shader();
             rnd = new Random();
+            mouse = new CustomMouse();
+            mouse.Setup(this);
         }
-
+        private CustomMouse mouse;
         private Shader myShader;
         private float time;
         private int count = 0;
         private Random rnd;
         private int seed = 0;
         private List<Boid> Boids = new List<Boid>();
+
+        private ImGuiController controller;
         protected override void OnLoad()
         {
             base.OnLoad();
@@ -39,11 +45,15 @@ namespace Boids
             {
                 Boids.Add(new Boid(new Vector2(800, 800), rnd));
             }
+            controller = new ImGuiController(800,800);
         }
 
+        
         protected override void OnRenderFrame(FrameEventArgs args)
         {
+            
             base.OnRenderFrame(args);
+            controller.Update(this,(float)args.Time);
             count++;
 
             myShader.Bind();
@@ -53,13 +63,15 @@ namespace Boids
             myShader.SetMatrix4("u_projection", projection);
 
             GL.ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-            GL.Clear(ClearBufferMask.ColorBufferBit);
+            GL.Clear(ClearBufferMask.ColorBufferBit|ClearBufferMask.DepthBufferBit|ClearBufferMask.StencilBufferBit);
             for (int i = 0; i < Boids.Count; i++)
             {
                 Boids[i].Update((float)(args.Time), Boids);
                 Boids[i].Draw(myShader);
             }
-
+            ImGui.ShowDemoWindow();
+            controller.Render();
+            ImGuiController.CheckGLError("End of frame");
             SwapBuffers();
         }
         private float GetPosition()
@@ -81,6 +93,8 @@ namespace Boids
             base.OnResize(args);
 
             GL.Viewport(0, 0, Size.X, Size.Y);
+
+            controller.WindowResized(Size.X, Size.Y);
         }
 
         protected override void OnUnload()

@@ -8,6 +8,7 @@ namespace Boids
    {
        static void Main(string[] args)
        {
+/// try catch block
            var windowSettings = new NativeWindowSettings()
            {
                Size = new OpenTK.Mathematics.Vector2i(800, 800),
