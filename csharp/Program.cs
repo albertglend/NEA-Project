@@ -1,116 +1,33 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OpenTK;
-using OpenTK.Windowing.GraphicsLibraryFramework;
-using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
-using OpenTK.Mathematics;
-using OpenTK.Input;
-using ImGuiNET;
 
 namespace Boids
 {
-    class Window : GameWindow
-    {
-        public Window(GameWindowSettings gameWindowSettings,
- NativeWindowSettings nativeWindowSettings)
-            : base(gameWindowSettings, nativeWindowSettings)
+    // Program class to commence window application instance
+   class Program
+   {
+       static void Main(string[] args)
+       {
+        // try catch exceptions of instantiation of window
+        try{ 
+            // sets default window settings
+           var windowSettings = new NativeWindowSettings()
+           {
+            // creates instance of window vector size, title and flags of WindowSettings variable
+               Size = new OpenTK.Mathematics.Vector2i(800, 800),
+               Title = "Basic Window",
+               Flags = ContextFlags.ForwardCompatible
+           };
+            // Creates new BOIDs window and initialises update thred
+           var window = new Window(GameWindowSettings.Default, windowSettings);
+           window.Run();     
+        } 
+        //exception catch information printed to console
+        catch (Exception e)
         {
-            myShader = new Shader();
-            rnd = new Random();
+            Console.WriteLine("Error loading Game Window, Please press escape and rerun the sln {0}", e);
         }
-
-        private Shader myShader;
-        private float time;
-        private int count = 0;
-        private Random rnd;
-        private int seed = 0;
-        private List<Boid> Boids = new List<Boid>();
-
-        private ImGuiController controller;
-        protected override void OnLoad()
-        {
-            base.OnLoad();
-            //always starts on the same seed
-            rnd = new Random(seed);
-            Boid.Setup();
-            myShader = new Shader("Shaders/VertexShader.glsl", "Shaders/FragmentShader.glsl");
-            for (int i = 0; i < 100; i++)
-            {
-                Boids.Add(new Boid(new Vector2(800, 800), rnd));
-            }
-            controller = new ImGuiController(800, 800);
-        }
-
-
-        protected override void OnRenderFrame(FrameEventArgs args)
-        {
-
-            base.OnRenderFrame(args);
-            controller.Update(this, (float)args.Time);
-            count++;
-
-            myShader.Bind();
-            time += (float)args.Time;
-            myShader.SetFloat("u_time", time);
-            Matrix4 projection = Matrix4.CreateOrthographicOffCenter(0, 800, 800, 0, 0.01f, 100);
-            myShader.SetMatrix4("u_projection", projection);
-
-            GL.ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
-            for (int i = 0; i < Boids.Count; i++)
-            {
-                Boids[i].Update((float)(args.Time), Boids);
-                Boids[i].Draw(myShader);
-            }
-            if (ImGui.Begin("test"))
-            {
-                ImGui.Text("success");
-                ImGui.End();
-            }
-            RenderImGui();
-            controller.Render();
-            ImGuiController.CheckGLError("End of frame");
-            SwapBuffers();
-        }
-        private float GetPosition()
-        {
-            return (float)(rnd.NextDouble() * 800);
-        }
-        protected override void OnUpdateFrame(FrameEventArgs args)
-        {
-            base.OnUpdateFrame(args);
-            KeyboardState input = KeyboardState;
-            if (input.IsKeyDown(Keys.Escape))
-            {
-                Close();
-            }
-        }
-
-        protected override void OnResize(ResizeEventArgs args)
-        {
-            base.OnResize(args);
-
-            GL.Viewport(0, 0, Size.X, Size.Y);
-
-            controller.WindowResized(Size.X, Size.Y);
-        }
-
-        protected override void OnUnload()
-        {
-            base.OnUnload();
-        }
-        protected void RenderImGui()
-        {
-
-            if (ImGui.Begin("settings"))
-            {
-                ImGui.SliderFloat("separation", ref Boid.SeparationInput, 1.0f, 100.0f);
-                ImGui.End();
-            }
-        }}}
-    
+       }
+   }
+}
