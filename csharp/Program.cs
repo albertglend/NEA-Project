@@ -19,7 +19,7 @@ namespace Boids
                Title = "Basic Window",
                Flags = ContextFlags.ForwardCompatible
            };
-            // Creates new BOIDs window and initialises update thred
+            // Creates new BOIDs window and initialises update thread
            var window = new Window(GameWindowSettings.Default, windowSettings);
            window.Run();     
         } 
