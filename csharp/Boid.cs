@@ -42,12 +42,15 @@ namespace Boids
         public Boid()
         {
             this.rnd = new Random();
+            this.Controller = new ImGuiController(800,800);
         }
         // Create new instance of BOID with random seed and window size as perameters and then reset the window
         public Boid(Vector2 WindowSize, Random rnd)
         {
             this.WindowSize = WindowSize;
             this.rnd = rnd;
+            this.Controller = new ImGuiController(800,800);
+
             Reset();
 
         }
@@ -250,7 +253,7 @@ namespace Boids
             //applies speed variation
             velocity = velocity * maxVelocity;
         }
-        //function applying openGL library angle mathematics based on the axis
+        //function applying openGL library angle mathematics based on the axis in radians
         public Matrix4 Rotation(double angle, Vector3 axis)
         {
             return Matrix4.CreateFromAxisAngle(axis, (float)angle);

@@ -152,7 +152,7 @@ namespace Boids
             }
             catch (Exception e)
             {
-                Console.WriteLine("Window closing error");
+                Console.WriteLine("Window closing error {0}", e);
             }
         }
         // function to render GUI boundary settings(Input reference, minimum float value, maximum float value)
